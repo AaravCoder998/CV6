@@ -12,7 +12,80 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="chinmaya-logo.png">
 </head>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add This to Your index.html</title>
+</head>
+<body>
+<!-- ADD THIS BEFORE </body> tag in your index.html -->
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY_HERE",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Override material upload to use Firebase
+window.saveToFirebase = function(collection, data) {
+    return db.collection(collection).add({
+        ...data,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+};
+
+window.getFromFirebase = function(collection) {
+    return db.collection(collection).get().then(snapshot => {
+        const data = [];
+        snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+        return data;
+    });
+};
+
+// Real-time listener for materials
+db.collection('materials').onSnapshot(snapshot => {
+    materialsDB = [];
+    snapshot.forEach(doc => {
+        materialsDB.push({ id: doc.id, ...doc.data() });
+    });
+    console.log('Materials updated:', materialsDB.length);
+    // Refresh materials page if open
+    if (document.getElementById('studyMaterialsPage').classList.contains('active')) {
+        loadMaterials('studyMaterials');
+    }
+});
+
+// Real-time listener for homework
+db.collection('homework').onSnapshot(snapshot => {
+    homeworkDB = [];
+    snapshot.forEach(doc => {
+        homeworkDB.push({ id: doc.id, ...doc.data() });
+    });
+    console.log('Homework updated:', homeworkDB.length);
+    // Refresh homework page if open
+    if (document.getElementById('homeworkPage').classList.contains('active')) {
+        loadHomework('homework');
+    }
+});
+
+console.log('✅ Firebase connected - Cross-device sharing enabled!');
+</script>
+
+</body>
+</html>
 <body>
     <!-- SCROLL PROGRESS BAR -->
     <div class="scroll-progress" id="scrollProgress"></div>
@@ -464,5 +537,6 @@
     <script src="script.js"></script>
     <script src="config.js"></script>
 </body>
+
 
 </html>
