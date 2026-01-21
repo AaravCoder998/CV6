@@ -2955,3 +2955,63 @@ console.log('📍 Available routes:');
 console.log('   - #student-login, #teacher-login');
 console.log('   - #student-dashboard, #teacher-dashboard');
 console.log('   - #student-[page], #teacher-[page]');
+// ============================================================
+// SESSION PERSISTENCE FIX
+// ============================================================
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 Checking for existing session...');
+    
+    if (currentUser && userType) {
+        console.log('✅ Session found:', currentUser.name, '| Type:', userType);
+        
+        document.getElementById('loginPage').classList.add('hidden');
+        
+        if (userType === 'student') {
+            showStudentDash();
+            if (!window.location.hash || window.location.hash.includes('login')) {
+                window.location.hash = 'student-dashboard';
+            }
+        } else {
+            showTeacherDash();
+            if (!window.location.hash || window.location.hash.includes('login')) {
+                window.location.hash = 'teacher-dashboard';
+            }
+        }
+    } else {
+        console.log('ℹ️ No session found');
+        if (!window.location.hash || !window.location.hash.includes('login')) {
+            window.location.hash = 'student-login';
+        }
+    }
+});
+
+// ============================================================
+// CROSS-TAB DATA SYNC (Materials & Homework visible to all)
+// ============================================================
+window.addEventListener('storage', function(e) {
+    if (e.key === 'materialsDB') {
+        materialsDB = loadFromCookie('materialsDB') || [];
+        console.log('📚 Materials synced from another tab');
+        if (document.getElementById('studyMaterialsPage') && 
+            document.getElementById('studyMaterialsPage').classList.contains('active')) {
+            loadMaterials('studyMaterials');
+        }
+    }
+    
+    if (e.key === 'homeworkDB') {
+        homeworkDB = loadFromCookie('homeworkDB') || [];
+        console.log('📝 Homework synced from another tab');
+        if (document.getElementById('homeworkPage') && 
+            document.getElementById('homeworkPage').classList.contains('active')) {
+            loadHomework('homework');
+        }
+    }
+    
+    if (e.key === 'assignmentsDB') {
+        assignmentsDB = loadFromCookie('assignmentsDB') || [];
+        console.log('📋 Assignments synced from another tab');
+    }
+});
+
+console.log('✅ Session auto-login enabled!');
+console.log('✅ Cross-tab sync enabled!');
